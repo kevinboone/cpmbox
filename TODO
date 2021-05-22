@@ -1,0 +1,13 @@
+Check redirect on PG
+Check drive-to-drive cp on PG
+
+mv does not produce an error if the target file is non-writable, e.g., on a
+different drive. This is due to a limitation in the Aztec C library, and could
+be fixed by rewriting the rename using BDOS operations.
+
+Prevent paging when input is not a terminal
+
+hexdump always shows a full line of 16 bytes, even if the value of 'offset'
+means that there isn't a full line to display. Missing data is padded with
+zeros. This only affects the last line displayed.
+
