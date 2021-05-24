@@ -40,25 +40,65 @@ char *to;
 uint8_t d_flag;
   {
   int fin, fout;
+  char fullto [BD_MAX_PATH + 1];
+  char fullfrom [BD_MAX_PATH + 1];
+
+  if (from[1] == ':')
+    {
+    strcpy (fullfrom, from);
+    }
+  else
+    {
+    fullfrom[0] = bd_cur_drv () - 1 + 'A';
+    fullfrom[1] = ':';
+    strcpy (fullfrom + 2, from);
+    }
+
+  if (strlen (to) == 2 && to[1] == ':')
+    {
+    /* "to" argument is just a drive letter. */
+
+    fullto[0] = to[0];
+    fullto[1] = ':';
+    if (from[1] == ':')
+      strcpy (fullto + 2, from + 2);
+    else
+      strcpy (fullto + 2, from);
+    }
+  else
+    strcpy (fullto, to);
+
+  if (fullto[1] == ':')
+    {
+    }
+  else
+    {
+    char temp [BD_MAX_PATH + 1];
+    strcpy (temp, fullto);
+    fullto[0] = bd_cur_drv () - 1 + 'A';
+    fullto[1] = ':';
+    strcpy (fullto + 2, temp);
+    }
+
 
   if (d_flag & DF_VERB)
     {
-    printf ("%s -> %s", from, to);
+    printf ("%s -> %s", fullfrom, fullto);
     fflush (stdout);
     if (!(d_flag & DF_PROG))
       printf ("\r\n");
     }
 
-  if (strcmp (from, to) == 0)
+  if (strcmp (fullfrom, fullto) == 0)
     {
     fprintf (stderr, "%s: Source and destination are the same\r\n", to);
     return FALSE;
     }
 
-  fin = open (from, O_RDONLY);
+  fin = open (fullfrom, O_RDONLY);
   if (fin >= 0)
     {
-    fout = open (to, O_WRONLY | O_CREAT | O_TRUNC);
+    fout = open (fullto, O_WRONLY | O_CREAT | O_TRUNC);
     if (fout >= 0)
       {
       int n = read (fin, &buff, sizeof (buff));
@@ -77,19 +117,19 @@ uint8_t d_flag;
         printf ("\r\n");
       if (n < 0)
         {
-        fprintf (stderr, "%s: %s\r\n", to, strerror (errno));
+        fprintf (stderr, "%s: %s\r\n", fullto, strerror (errno));
         }
       }
     else
       {
-      fprintf (stderr, "%s: %s\r\n", to, strerror (errno));
+      fprintf (stderr, "%s: %s\r\n", fullto, strerror (errno));
       return FALSE;
       }
     close (fin);
     }
   else
     {
-    fprintf (stderr, "%s: %s\r\n", from, strerror (errno));
+    fprintf (stderr, "%s: %s\r\n", fullfrom, strerror (errno));
     return FALSE;
     }
 
